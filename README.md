@@ -116,9 +116,6 @@ python -m pip install \
   --index-url https://download.pytorch.org/whl/cpu
 ```
 
-Use the [PyTorch installer](https://pytorch.org/get-started/locally/) when a
-different CUDA version is required.
-
 Clone the tested SAM2 revision if `~/real2mesh/sam2` does not exist:
 
 ```bash
@@ -136,30 +133,12 @@ SAM2_BUILD_CUDA=0 python -m pip install \
   -r requirements.txt
 ```
 
-The disabled optional SAM2 extension is not needed by this project's
-predictor. OpenCV is installed by Conda above because `test_env` uses the
-conda-forge OpenCV 5.0.0 build rather than a PyPI wheel.
-
 Download checkpoints:
 
 ```bash
 cd ~/real2mesh/sam2/checkpoints
 ./download_ckpts.sh
 cd ~/real2mesh
-```
-
-Verify the required model:
-
-```bash
-test -f sam2/checkpoints/sam2.1_hiera_large.pt && echo "Checkpoint OK"
-test -f sam2/sam2/configs/sam2.1/sam2.1_hiera_l.yaml && echo "Config OK"
-```
-
-Verify the environment:
-
-```bash
-python -c "import cv2, torch, trimesh; from sam2.build_sam import build_sam2_video_predictor; print('Imports OK; CUDA:', torch.cuda.is_available())"
-which colmap
 ```
 
 Make the pipelines executable:
@@ -218,32 +197,12 @@ python segment_images_sam2.py \
 ```
 
 An image window opens. Draw a box around the object and press Enter or Space.
-SAM2 tracks that object and writes one mask per frame.
-
-Use `--device cpu` if PyTorch reports no CUDA. For a non-interactive run,
-provide the box as `X1 Y1 X2 Y2`:
-
-```bash
-python segment_images_sam2.py \
-  ferrari_lego/images ferrari_lego/masks \
-  --checkpoint sam2/checkpoints/sam2.1_hiera_large.pt \
-  --device cuda \
-  --box 120 80 450 390
-```
+SAM2 tracks that object and writes one mask per frame. Use `--device cpu` if PyTorch reports no CUDA. 
 
 Add `--prompt-frame 10` if the object is clearer in frame index 10. Tracking
 then runs forward and backward.
 
-Mask naming must preserve the full image name:
-
-```text
-images/frame_000001.jpg
-masks/frame_000001.jpg.png
-```
-
-White mask pixels retain COLMAP features; black pixels exclude them.
-
-Segmentation does not remove stale masks. If the images changed, reset masks:
+White mask pixels retain COLMAP features; black pixels exclude them. Segmentation does not remove stale masks. If the images changed, reset masks:
 
 ```bash
 rm -rf ferrari_lego/masks
@@ -263,25 +222,9 @@ old databases and depth maps cannot contaminate a new run.
 
 ### 4. Run masked reconstruction
 
-First confirm that every image has a mask:
-
-```bash
-missing=0
-for image in ferrari_lego/images/*; do
-  mask="ferrari_lego/masks/$(basename "$image").png"
-  if [ ! -f "$mask" ]; then echo "Missing: $mask"; missing=1; fi
-done
-test "$missing" -eq 0 && echo "All masks found"
-```
-
-Then run:
-
 ```bash
 ./colmap_reconstruction_masked.sh ferrari_lego
 ```
-
-Only feature extraction uses `ferrari_lego/masks`; later COLMAP stages match
-the raw pipeline.
 
 **Destructive:** this script deletes only `ferrari_lego/recon_masked`.
 It does not modify `recon`, images, or masks.
@@ -301,8 +244,6 @@ python view_mesh.py \
   --mesh ferrari_lego/recon_masked/dense/mesh_poisson.ply
 ```
 
-The Trimesh window requires a graphical display and OpenGL.
-
 ## Outputs
 
 | Result | Raw path | Masked path |
@@ -311,90 +252,3 @@ The Trimesh window requires a graphical display and OpenGL.
 | Sparse model | `recon/sparse/0/` | `recon_masked/sparse/0/` |
 | Dense cloud | `recon/dense/fused.ply` | `recon_masked/dense/fused.ply` |
 | Mesh | `recon/dense/mesh_poisson.ply` | `recon_masked/dense/mesh_poisson.ply` |
-
-All paths in this table are under the dataset directory.
-
-## Troubleshooting
-
-### Command or import not found
-
-```bash
-conda activate real2mesh3d
-cd ~/real2mesh
-which python
-which colmap
-```
-
-Re-run the requirements installation if a Python import is missing.
-
-### SAM2 checkpoint or config error
-
-Run from `~/real2mesh`. The checkpoint is a filesystem path:
-
-```text
-sam2/checkpoints/sam2.1_hiera_large.pt
-```
-
-The Hydra config name is package-relative:
-
-```text
-configs/sam2.1/sam2.1_hiera_l.yaml
-```
-
-Do not pass `sam2/sam2/configs/...` as `--model-config`.
-
-### CUDA failure
-
-```bash
-nvidia-smi
-python -c "import torch; print(torch.cuda.is_available())"
-colmap -h
-```
-
-All three must indicate working GPU support for the full workflow.
-
-### Window cannot open
-
-Check `echo "$DISPLAY"`. On a headless machine, use `--box` for segmentation.
-Mesh viewing still needs an X server or virtual display.
-
-### Multiple sparse models
-
-COLMAP may create `sparse/0`, `sparse/1`, and others because multiple models
-are enabled. Compare them:
-
-```bash
-colmap model_analyzer --path ferrari_lego/recon/sparse/0
-colmap model_analyzer --path ferrari_lego/recon/sparse/1
-```
-
-The scripts use `sparse/0`; it should contain the desired images.
-
-### Poisson meshing crashes
-
-Check the dense point count:
-
-```bash
-sed -n '1,15p' ferrari_lego/recon/dense/fused.ply
-```
-
-`element vertex` must be a meaningful dense count, not a few points. Check
-that PatchMatch produced roughly one geometric depth map per image:
-
-```bash
-find ferrari_lego/images -maxdepth 1 -type f | wc -l
-find ferrari_lego/recon/dense/stereo/depth_maps \
-  -name '*.geometric.bin' | wc -l
-```
-
-If most maps are missing, fix the PatchMatch/GPU error and restart the raw
-pipeline. It will clear the incomplete reconstruction.
-
-## Safe rerun summary
-
-| Command | Directory cleared automatically |
-|---|---|
-| `extract_frames.py` | `images/` |
-| `segment_images_sam2.py` | None |
-| `colmap_reconstruction_raw.sh` | `recon/` |
-| `colmap_reconstruction_masked.sh` | `recon_masked/` |
