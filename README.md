@@ -45,6 +45,14 @@ Before running the workflow:
     └── ferrari_lego.mp4
 ```
 
+Download the example
+[`ferrari_lego` video](https://drive.google.com/file/d/1b5y2e2xu1iF_H6hQpi_Z1J8YOyzPqMqD/view?usp=sharing),
+create the dataset directory, and save the downloaded file as:
+
+```text
+ferrari_lego/ferrari_lego.mp4
+```
+
 The workflow creates:
 
 ```text
@@ -74,8 +82,7 @@ cd ~/real2mesh
 
 Activate `real2mesh3d` again whenever a new terminal is opened.
 
-Install the same CUDA-enabled COLMAP, FFmpeg, and OpenCV builds used by the
-tested `test_env` environment:
+Install CUDA-enabled COLMAP, FFmpeg, and OpenCV:
 
 ```bash
 conda install -c conda-forge \
