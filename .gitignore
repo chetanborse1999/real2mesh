@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# External SAM2 checkout and checkpoints
+sam2/
+*.pt
+
+# Input datasets and generated results
+ferrari_lego/
+*.mp4
+*.mov
+*.avi
+**/images/
+**/masks/
+**/recon/
+**/recon_masked/
+*.db
+*.ply
+
+# Crash dumps
+core
+core.*
+
+# Editors
+.vscode/
+.idea/
+.DS_Store
