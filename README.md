@@ -6,6 +6,19 @@ This project converts a video into raw and object-masked 3D meshes:
 video → JPEG frames → SAM2 object masks → COLMAP → PLY meshes
 ```
 
+The complete walkthrough uses the example
+[`ferrari_lego` video](https://drive.google.com/file/d/1b5y2e2xu1iF_H6hQpi_Z1J8YOyzPqMqD/view?usp=sharing).
+Download it, create a `ferrari_lego` directory in the repository, and save the
+video as:
+
+```text
+ferrari_lego/ferrari_lego.mp4
+```
+
+You can replace it with any other video. Use a different dataset directory and
+video filename as needed, then substitute those paths for `ferrari_lego` in
+the commands below.
+
 Commands in this guide are run in a terminal from `~/real2mesh`. The example
 project is named `ferrari_lego`; replace that name for another dataset.
 
@@ -43,14 +56,6 @@ Before running the workflow:
 │   └── checkpoints/sam2.1_hiera_large.pt
 └── ferrari_lego/
     └── ferrari_lego.mp4
-```
-
-Download the example
-[`ferrari_lego` video](https://drive.google.com/file/d/1b5y2e2xu1iF_H6hQpi_Z1J8YOyzPqMqD/view?usp=sharing),
-create the dataset directory, and save the downloaded file as:
-
-```text
-ferrari_lego/ferrari_lego.mp4
 ```
 
 The workflow creates:
