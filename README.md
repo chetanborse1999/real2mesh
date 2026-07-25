@@ -7,7 +7,7 @@ video → JPEG frames → SAM2 object masks → COLMAP → PLY meshes
 ```
 
 The complete walkthrough uses the example
-[`ferrari_lego` video](https://drive.google.com/file/d/1b5y2e2xu1iF_H6hQpi_Z1J8YOyzPqMqD/view?usp=sharing).
+[`ferrari_lego`](https://drive.google.com/file/d/1b5y2e2xu1iF_H6hQpi_Z1J8YOyzPqMqD/view?usp=sharing) video.
 Download it, create a `ferrari_lego` directory in the repository, and save the
 video as:
 
@@ -20,7 +20,7 @@ video filename as needed, then substitute those paths for `ferrari_lego` in
 the commands below.
 
 Commands in this guide are run in a terminal from `~/real2mesh`. The example
-project is named `ferrari_lego`; replace that name for another dataset.
+project is named `ferrari_lego`; replace that name for another dataset. Included [Summary](https://github.com/chetanborse1999/real2mesh/blob/master/real2mesh.pdf) and [Results](https://drive.google.com/file/d/1qvyORuRSIDT9YwBVmuvsYDwXsn6gK9du/view) for this video capture.
 
 ## Requirements
 
