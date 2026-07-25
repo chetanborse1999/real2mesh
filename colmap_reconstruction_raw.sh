@@ -1,18 +1,11 @@
 #!/bin/bash
 
-# COLMAP Reconstruction Pipeline
-# This script runs the complete COLMAP reconstruction workflow in sequence
-#
-# Usage: ./colmap_reconstruction.sh <project_dir>
-# Example: ./colmap_reconstruction.sh south-building
-#          ./colmap_reconstruction.sh ferrari_lego
+# Usage: ./colmap_reconstruction_raw.sh <project_dir>
 
-set -e  # Exit on error
+set -e
 
-# Error handler
 trap 'echo ""; echo "❌ Error: Command failed on line $LINENO"; echo "Failed command: $BASH_COMMAND"; exit 1' ERR
 
-# Check if project_dir argument is provided
 if [ -z "$1" ]; then
     echo "Error: Project directory name required"
     echo "Usage: $0 <project_dir>"
@@ -25,24 +18,20 @@ BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$BASE_DIR/$PROJECT_NAME"
 PROJECT_RECON_DIR="$PROJECT_DIR/recon"
 
-# Validate project directory exists
 if [ ! -d "$PROJECT_DIR" ]; then
     echo "Error: Project directory not found: $PROJECT_DIR"
     exit 1
 fi
 
-# Start from a clean raw reconstruction workspace so databases, sparse models,
-# and dense products from earlier runs cannot be mixed with the current run.
+# Prevent old databases and models from contaminating a new run.
 if [ -d "$PROJECT_RECON_DIR" ]; then
   echo "Clearing previous raw reconstruction: $PROJECT_RECON_DIR"
   rm -rf -- "$PROJECT_RECON_DIR"
 fi
 
-# Create necessary directories
 mkdir -p "$PROJECT_RECON_DIR/sparse"
 mkdir -p "$PROJECT_RECON_DIR/dense"
 
-# Source config file (optional)
 CONFIG_FILE="$BASE_DIR/colmap_config.sh"
 if [ -f "$CONFIG_FILE" ]; then
   # shellcheck source=/dev/null

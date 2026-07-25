@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
-"""
-Extract frames from a video file at a specified frame rate using OpenCV.
-
-Usage:
-    python extract_frames.py --video_file <video_file> --frame_rate <frame_rate> [--output_dir <output_dir>]
-
-Arguments:
-    --video_file: Path to the input video file (required)
-    --frame_rate: Frame rate (frames per second) to extract (required)
-    --output_dir: Output directory to save frames (default: ./frames)
-"""
+"""Extract video frames at a requested frame rate."""
 
 import cv2
 import os
@@ -41,25 +31,13 @@ def prepare_output_directory(output_dir):
 
 
 def extract_frames(video_path, frame_rate, output_dir="frames"):
-    """
-    Extract frames from a video file.
-    
-    Args:
-        video_path: Path to the input video file
-        frame_rate: Frame rate (frames per second) to extract
-        output_dir: Directory to save extracted frames
-    
-    Returns:
-        True if successful, False otherwise
-    """
-    # Open the video file
+    """Extract frames and return whether the operation succeeded."""
     cap = cv2.VideoCapture(video_path)
     
     if not cap.isOpened():
         print(f"Error: Cannot open video file '{video_path}'")
         return False
 
-    # Start each valid extraction run with an empty output directory.
     try:
         output_dir = prepare_output_directory(output_dir)
     except (OSError, ValueError) as exc:
@@ -67,7 +45,6 @@ def extract_frames(video_path, frame_rate, output_dir="frames"):
         print(f"Error: Cannot prepare output directory: {exc}")
         return False
     
-    # Get video properties
     fps = cap.get(cv2.CAP_PROP_FPS)
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -79,7 +56,6 @@ def extract_frames(video_path, frame_rate, output_dir="frames"):
     print(f"  Resolution: {width}x{height}")
     print(f"  Target extraction rate: {frame_rate} fps")
     
-    # Calculate frame interval
     frame_interval = int(fps / frame_rate) if frame_rate > 0 else 1
     if frame_interval < 1:
         frame_interval = 1
@@ -89,7 +65,6 @@ def extract_frames(video_path, frame_rate, output_dir="frames"):
     frame_count = 0
     extracted_count = 0
     
-    # Extract frames
     while True:
         ret, frame = cap.read()
         
@@ -97,7 +72,6 @@ def extract_frames(video_path, frame_rate, output_dir="frames"):
             break
         
         if frame_count % frame_interval == 0:
-            # Save frame
             frame_filename = os.path.join(output_dir, f"frame_{extracted_count:06d}.jpg")
             cv2.imwrite(frame_filename, frame)
             extracted_count += 1
@@ -139,7 +113,6 @@ def main():
     
     args = parser.parse_args()
     
-    # Validate inputs
     if not os.path.exists(args.video_file):
         print(f"Error: Video file '{args.video_file}' not found")
         sys.exit(1)
@@ -148,7 +121,6 @@ def main():
         print("Error: Frame rate must be greater than 0")
         sys.exit(1)
     
-    # Extract frames
     success = extract_frames(args.video_file, args.frame_rate, args.output_dir)
     
     sys.exit(0 if success else 1)
